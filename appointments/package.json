@@ -5,9 +5,12 @@
   "main": "index.js",
   "scripts": {
     "build": "webpack",
-    "format": "prettier --write {src,test}/*",
-    "lint": "eslint {src,test}/**/*",
-    "test": "jest"
+    "build-server": "webpack --config webpack-server.config.js",
+    "format": "prettier --write {src,test,server}/*",
+    "lint": "eslint {src,test,server}/**/*",
+    "serve": "node dist/server/server.js",
+    "test": "jest",
+    "test-server": "jest --config server/jest.json"
   },
   "repository": {
     "type": "git",
@@ -24,12 +27,20 @@
     "eslint": "^8.6.0",
     "eslint-plugin-react": "^7.28.0",
     "eslint-plugin-react-hooks": "^4.3.0",
+    "express": "^4.17.3",
+    "graphql-helix": "^1.11.0",
     "jest": "^27.4.5",
+    "jest-raw-loader": "^1.0.1",
+    "raw-loader": "^4.0.2",
+    "morgan": "^1.10.0",
+    "supertest": "^6.2.2",
     "webpack": "^5.69.1",
-    "webpack-cli": "^4.9.2"
+    "webpack-cli": "^4.9.2",
+    "webpack-node-externals": "^3.0.0"
   },
   "dependencies": {
     "@babel/runtime": "^7.16.5",
+    "graphql": "^16.2.0",
     "react": "^18.0.0-rc.0-next-aa8f2bdbc-20211215",
     "react-dom": "^18.0.0-rc.0-next-aa8f2bdbc-20211215"
   },
@@ -41,6 +52,12 @@
     "globals": {
       "IS_REACT_ACT_ENVIRONMENT": true
     },
-    "setupFilesAfterEnv": ["./test/domMatchers.js"]
+    "setupFilesAfterEnv": [
+      "./test/domMatchers.js"
+    ],
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/server/"
+    ]
   }
 }
