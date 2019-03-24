@@ -1,10 +1,25 @@
 import React, { useState } from "react";
 
+const required = (description) => (value) =>
+  !value || value.trim() === "" ? description : undefined;
+
+const match = (re, description) => (value) =>
+  !value.match(re) ? description : undefined;
+
+const list =
+  (...validators) =>
+  (value) =>
+    validators.reduce(
+      (result, validator) => result || validator(value),
+      undefined
+    );
+
 const Error = () => (
   <p className="error">An error occurred during save.</p>
 );
 
 export const CustomerForm = ({ original, onSave }) => {
+  const [validationErrors, setValidationErrors] = useState({});
   const [error, setError] = useState(false);
 
   const [customer, setCustomer] = useState(original);
@@ -14,6 +29,38 @@ export const CustomerForm = ({ original, onSave }) => {
       ...customer,
       [target.name]: target.value,
     }));
+
+  const handleBlur = ({ target }) => {
+    const validators = {
+      firstName: required("First name is required"),
+      lastName: required("Last name is required"),
+      phoneNumber: list(
+        required("Phone number is required"),
+        match(
+          /^[0-9+()\- ]*$/,
+          "Only numbers, spaces and these symbols are allowed: ( ) + -"
+        )
+      ),
+    };
+    const result = validators[target.name](target.value);
+    setValidationErrors({
+      ...validationErrors,
+      [target.name]: result,
+    });
+  };
+
+  const hasError = (fieldName) =>
+    validationErrors[fieldName] !== undefined;
+
+  const renderError = (fieldName) => {
+    if (hasError(fieldName)) {
+      return (
+        <span className="error">
+          {validationErrors[fieldName]}
+        </span>
+      );
+    }
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -42,7 +89,10 @@ export const CustomerForm = ({ original, onSave }) => {
         id="firstName"
         value={customer.firstName}
         onChange={handleChange}
+        onBlur={handleBlur}
       />
+      {renderError("firstName")}
+
       <label htmlFor="lastName">Last name</label>
       <input
         type="text"
@@ -50,7 +100,10 @@ export const CustomerForm = ({ original, onSave }) => {
         id="lastName"
         value={customer.lastName}
         onChange={handleChange}
+        onBlur={handleBlur}
       />
+      {renderError("lastName")}
+
       <label htmlFor="phoneNumber">Phone number</label>
       <input
         type="text"
@@ -58,7 +111,10 @@ export const CustomerForm = ({ original, onSave }) => {
         id="phoneNumber"
         value={customer.phoneNumber}
         onChange={handleChange}
+        onBlur={handleBlur}
       />
+      {renderError("phoneNumber")}
+
       <input type="submit" value="Add" />
     </form>
   );

@@ -11,6 +11,7 @@ import {
   submit,
   submitButton,
   labelFor,
+  withFocus,
 } from "./reactTestExtensions";
 import { bodyOfLastFetchRequest } from "./spyHelpers";
 import {
@@ -218,6 +219,56 @@ describe("CustomerForm", () => {
       );
       await clickAndWait(submitButton());
       await clickAndWait(submitButton());
+
+      expect(element(".error")).toBeNull();
+    });
+  });
+
+  describe("validation", () => {
+    const itInvalidatesFieldWithValue = (
+      fieldName,
+      value,
+      description
+    ) => {
+      it(`displays error after blur when ${fieldName} field is '${value}'`, () => {
+        render(<CustomerForm original={blankCustomer} />);
+
+        withFocus(field(fieldName), () =>
+          change(field(fieldName), value)
+        );
+
+        expect(element(".error")).not.toBeNull();
+        expect(element(".error")).toContainText(description);
+      });
+    };
+
+    itInvalidatesFieldWithValue(
+      "firstName",
+      " ",
+      "First name is required"
+    );
+    itInvalidatesFieldWithValue(
+      "lastName",
+      " ",
+      "Last name is required"
+    );
+    itInvalidatesFieldWithValue(
+      "phoneNumber",
+      " ",
+      "Phone number is required"
+    );
+    itInvalidatesFieldWithValue(
+      "phoneNumber",
+      "invalid",
+      "Only numbers, spaces and these symbols are allowed: ( ) + -"
+    );
+
+    it("accepts standard phone number characters when validating", () => {
+      render(<CustomerForm original={blankCustomer} />);
+
+      withFocus(field("phoneNumber"), () =>
+        change(field("phoneNumber"), "0123456789+()- ")
+      );
 
       expect(element(".error")).toBeNull();
     });
