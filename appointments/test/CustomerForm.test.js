@@ -1,10 +1,12 @@
 import React from "react";
+import { act } from "react-dom/test-utils";
 import {
   initializeReactContainer,
   render,
   element,
   form,
   field,
+  click,
   clickAndWait,
   submitAndWait,
   change,
@@ -228,16 +230,65 @@ describe("CustomerForm", () => {
 
   it("does not submit the form when there are validation errors", async () => {
     render(<CustomerForm original={blankCustomer} />);
-
     await clickAndWait(submitButton());
     expect(global.fetch).not.toBeCalled();
   });
 
   it("renders validation errors after submission fails", async () => {
-    render(<CustomerForm original={blankCustomer} />);
+    render(
+      <CustomerForm
+        original={blankCustomer}
+        onSave={() => {}}
+      />
+    );
     await clickAndWait(submitButton());
     expect(global.fetch).not.toBeCalled();
     expect(element(".error")).not.toBeNull();
+  });
+
+  it("renders field validation errors from server", async () => {
+    const errors = {
+      phoneNumber: "Phone number already exists in the system",
+    };
+    global.fetch.mockResolvedValue(
+      fetchResponseError(422, { errors })
+    );
+    render(<CustomerForm original={validCustomer} />);
+    await clickAndWait(submitButton());
+    expect(element(".error")).toContainText(errors.phoneNumber);
+  });
+
+  describe("submitting indicator", () => {
+    it("displays when form is submitting", async () => {
+      render(
+        <CustomerForm
+          original={validCustomer}
+          onSave={() => {}}
+        />
+      );
+      click(submitButton());
+      await act(async () => {
+        expect(
+          element("span.submittingIndicator")
+        ).not.toBeNull();
+      });
+    });
+
+    it("initially does not display", () => {
+      render(<CustomerForm original={validCustomer} />);
+      expect(element(".submittingIndicator")).toBeNull();
+    });
+
+    it("hides after submission", async () => {
+      render(
+        <CustomerForm
+          original={validCustomer}
+          onSave={() => {}}
+        />
+      );
+      await clickAndWait(submitButton());
+      expect(element(".submittingIndicator")).toBeNull();
+    });
   });
 
   describe("validation", () => {
