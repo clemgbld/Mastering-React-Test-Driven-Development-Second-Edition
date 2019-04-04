@@ -42,7 +42,8 @@
     "@babel/runtime": "^7.16.5",
     "graphql": "^16.2.0",
     "react": "^18.0.0-rc.0-next-aa8f2bdbc-20211215",
-    "react-dom": "^18.0.0-rc.0-next-aa8f2bdbc-20211215"
+    "react-dom": "^18.0.0-rc.0-next-aa8f2bdbc-20211215",
+    "react-router-dom": "^6.2.1"
   },
   "prettier": {
     "printWidth": 64
@@ -60,6 +61,7 @@
       "/node_modules/",
       "/server/"
     ],
+    "clearMocks": true,
     "restoreMocks": true
   }
 }

@@ -1,8 +1,9 @@
 import React, { useState, useCallback } from "react";
+import { Route, Link, Switch } from "react-router-dom";
 import { AppointmentFormLoader } from "./AppointmentFormLoader";
 import { AppointmentsDayViewLoader } from "./AppointmentsDayViewLoader";
 import { CustomerForm } from "./CustomerForm";
-import { CustomerSearch } from "./CustomerSearch";
+import { CustomerSearchRoute } from "./CustomerSearchRoute";
 
 const blankCustomer = {
   firstName: "",
@@ -16,28 +17,38 @@ const blankAppointment = {
   startsAt: null,
 };
 
-export const App = () => {
-  const [view, setView] = useState("dayView");
+export const MainScreen = () => (
+  <>
+    <menu>
+      <li>
+        <Link to="/addCustomer" role="button">
+          Add customer and appointment
+        </Link>
+      </li>
+      <li>
+        <Link to="/searchCustomers" role="button">
+          Search customers
+        </Link>
+      </li>
+    </menu>
+    <AppointmentsDayViewLoader />
+  </>
+);
+
+export const App = ({ history }) => {
   const [customer, setCustomer] = useState();
 
-  const transitionToAddAppointment = useCallback((customer) => {
-    setCustomer(customer);
-    setView("addAppointment");
-  }, []);
-
-  const transitionToAddCustomer = useCallback(
-    () => setView("addCustomer"),
-    []
+  const transitionToAddAppointment = useCallback(
+    (customer) => {
+      setCustomer(customer);
+      history.push("/addAppointment");
+    },
+    [history]
   );
 
   const transitionToDayView = useCallback(
-    () => setView("dayView"),
-    []
-  );
-
-  const transitionToSearchCustomers = useCallback(
-    () => setView("searchCustomers"),
-    []
+    () => history.push("/"),
+    [history]
   );
 
   const searchActions = (customer) => (
@@ -48,58 +59,39 @@ export const App = () => {
     </button>
   );
 
-  switch (view) {
-    case "addCustomer":
-      return (
-        <CustomerForm
-          original={blankCustomer}
-          onSave={transitionToAddAppointment}
-        />
-      );
-    case "searchCustomers":
-      return (
-        <CustomerSearch renderCustomerActions={searchActions} />
-      );
-    case "addAppointment":
-      return (
-        <AppointmentFormLoader
-          original={{
-            ...blankAppointment,
-            customer: customer.id,
-          }}
-          onSave={transitionToDayView}
-        />
-      );
-    default:
-      return (
-        <>
-          <menu>
-            <li>
-              <button
-                type="button"
-                onClick={transitionToAddCustomer}
-              >
-                Add customer and appointment
-              </button>
-            </li>
-            <li>
-              <button
-                type="button"
-                onClick={transitionToSearchCustomers}
-              >
-                Search customers
-              </button>
-            </li>
-          </menu>
-          {view === "addCustomer" ? (
-            <CustomerForm original={{}} />
-          ) : (
-            <>
-              <menu></menu>
-              <AppointmentsDayViewLoader />
-            </>
-          )}
-        </>
-      );
-  }
+  return (
+    <Switch>
+      <Route
+        path="/addCustomer"
+        render={() => (
+          <CustomerForm
+            original={blankCustomer}
+            onSave={transitionToAddAppointment}
+          />
+        )}
+      />
+      <Route
+        path="/addAppointment"
+        render={() => (
+          <AppointmentFormLoader
+            original={{
+              ...blankAppointment,
+              customer: customer.id,
+            }}
+            onSave={transitionToDayView}
+          />
+        )}
+      />
+      <Route
+        path="/searchCustomers"
+        render={(props) => (
+          <CustomerSearchRoute
+            {...props}
+            renderCustomerActions={searchActions}
+          />
+        )}
+      />
+      <Route component={MainScreen} />
+    </Switch>
+  );
 };

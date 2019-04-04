@@ -98,3 +98,11 @@ export const buttonWithLabel = (label) =>
   elements("button").find(
     ({ textContent }) => textContent === label
   );
+
+export const propsMatching = (mockComponent, matching) => {
+  const [k, v] = Object.entries(matching)[0];
+  const call = mockComponent.mock.calls.find(
+    ([props]) => props[k] === v
+  );
+  return call?.[0];
+};
