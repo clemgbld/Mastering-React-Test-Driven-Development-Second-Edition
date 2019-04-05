@@ -1,10 +1,14 @@
 import ReactDOM from "react-dom";
 import { act } from "react-dom/test-utils";
+import { Provider } from "react-redux";
+import { storeSpy } from "expect-redux";
+import { configureStore } from "../src/store";
 
 export let container;
 let reactRoot;
 
 export const initializeReactContainer = () => {
+  const store = configureStore([storeSpy]);
   container = document.createElement("div");
   document.body.replaceChildren(container);
   reactRoot = ReactDOM.createRoot(container);
@@ -23,6 +27,13 @@ export const renderAdditional = (component) => {
   );
   return additionalContainer;
 };
+
+export const renderWithStore = (component) =>
+  act(() =>
+    reactRoot.render(
+      <Provider store={store}>{component}</Provider>
+    )
+  );
 
 export const click = (element) => act(() => element.click());
 
