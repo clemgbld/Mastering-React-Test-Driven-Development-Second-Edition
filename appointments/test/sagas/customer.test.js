@@ -35,16 +35,44 @@ describe("addCustomer", () => {
       .matching({ type: "ADD_CUSTOMER_SUBMITTING" });
   });
 
-  it("submits request to the fetch api", async () => {
+  it("sends HTTP request to POST /customers", async () => {
     const inputCustomer = { firstName: "Ashley" };
     dispatchRequest(inputCustomer);
 
-    expect(global.fetch).toBeCalledWith("/customers", {
-      body: JSON.stringify(inputCustomer),
-      method: "POST",
-      credentials: "same-origin",
-      headers: { "Content-Type": "application/json" },
-    });
+    expect(global.fetch).toBeCalledWith(
+      "/customers",
+      expect.objectContaining({
+        method: "POST",
+      })
+    );
+  });
+
+  if (
+    ("calls fetch with correction configuration",
+    async () => {
+      const inputCustomer = { firstName: "Ashley" };
+      dispatchRequest(inputCustomer);
+
+      expect(global.fetch).toBeCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          credentials: "same-origin",
+          headers: { "Content-Type": "application/json" },
+        })
+      );
+    })
+  );
+
+  it("calls fetch with customer as request body", async () => {
+    const inputCustomer = { firstName: "Ashley" };
+    dispatchRequest(inputCustomer);
+
+    expect(global.fetch).toBeCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        body: JSON.stringify(inputCustomer),
+      })
+    );
   });
 
   it("dispatches ADD_CUSTOMER_SUCCESSFUL on success", () => {

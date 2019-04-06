@@ -45,6 +45,7 @@
     "graphql": "^16.2.0",
     "react": "^18.0.0-rc.0-next-aa8f2bdbc-20211215",
     "react-dom": "^18.0.0-rc.0-next-aa8f2bdbc-20211215",
+    "react-redux": "^8.0.0-beta.2",
     "react-router-dom": "^6.2.1",
     "redux": "^4.1.2",
     "redux-saga": "^1.1.3"
