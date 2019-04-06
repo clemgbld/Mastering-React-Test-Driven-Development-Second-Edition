@@ -8,6 +8,7 @@
     "build-server": "webpack --config webpack-server.config.js",
     "format": "prettier --write {src,test,server}/*",
     "lint": "eslint {src,test,server}/**/*",
+    "relay": "relay-compiler --src ./src --schema ./src/schema.graphql --watchman false",
     "serve": "node dist/server/server.js",
     "test": "jest",
     "test-server": "jest --config server/jest.json"
