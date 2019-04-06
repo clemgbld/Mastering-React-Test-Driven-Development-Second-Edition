@@ -19,6 +19,7 @@ import { CustomerForm } from "../src/CustomerForm";
 import { blankCustomer } from "./builders/customer";
 import { blankAppointment } from "./builders/appointment";
 import { CustomerSearchRoute } from "../src/CustomerSearchRoute";
+import { CustomerHistory } from "../src/CustomerHistory";
 
 jest.mock("../src/AppointmentFormLoader", () => ({
   AppointmentFormLoader: jest.fn(() => (
@@ -163,5 +164,32 @@ describe("App", () => {
       click(button);
       expect(dispatchSpy).toBeCalledWith(customer);
     });
+
+    it("passes a button to the CustomerSearch named View history", () => {
+      const button = childrenOf(
+        renderSearchActionsForCustomer(customer)
+      )[1];
+      expect(button.type).toEqual("button");
+      expect(button.props.role).toEqual("button");
+      expect(button.props.children).toEqual("View history");
+    });
+
+    it("navigates to /customer/:id when clicking the View history button", () => {
+      const button = childrenOf(
+        renderSearchActionsForCustomer(customer)
+      )[1];
+      click(button);
+      expect(historySpy).toBeCalledWith("/customer/123");
+    });
+  });
+
+  it("renders CustomerHistory at /customer", () => {
+    render(<App />);
+    const match = { params: { id: "123" } };
+    const element = routeFor("/customer/:id").props.render({
+      match,
+    });
+    expect(element.type).toEqual(CustomerHistory);
+    expect(element.props.id).toEqual("123");
   });
 });
