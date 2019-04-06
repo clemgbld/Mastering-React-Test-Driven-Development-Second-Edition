@@ -73,7 +73,10 @@ describe("getEnvironment", () => {
   });
 
   it("calls Environment with network and store", () => {
-    expect(Environment).toBeCalledWith({ network, store });
+    expect(Environment).toBeCalledWith({
+      network,
+      store,
+    });
   });
 
   it("calls Network.create with performFetch", () => {
