@@ -101,9 +101,9 @@ describe("App", () => {
 
   it("renders CustomerForm at the /addCustomer endpoint", () => {
     render(<App />);
-    expect(
-      routeFor("/addCustomer").props.render().type
-    ).toEqual(CustomerForm);
+    expect(routeFor("/addCustomer").props.component).toEqual(
+      CustomerForm
+    );
   });
 
   it("renders AppointmentFormLoader at /addAppointment", () => {
@@ -122,23 +122,6 @@ describe("App", () => {
 
   const customer = { id: 123 };
 
-  it("navigates to /addAppointment after the CustomerForm is submitted", () => {
-    render(<App history={{ push: historySpy }} />);
-    const onSave =
-      routeFor("/addCustomer").props.render().props.onSave;
-    onSave(customer);
-    expect(historySpy).toBeCalledWith("/addAppointment");
-  });
-
-  it("passes saved customer to AppointmentFormLoader after the CustomerForm is submitted", () => {
-    render(<App history={{ push: historySpy }} />);
-    const onSave =
-      routeFor("/addCustomer").props.render().props.onSave;
-    onSave(customer);
-    let renderFunc = routeFor("/addAppointment").props.render;
-    expect(renderFunc().props.customer).toEqual(customer);
-  });
-
   it("navigates to / when AppointmentFormLoader is saved", () => {
     render(<App history={{ push: historySpy }} />);
     const onSave = routeFor("/addAppointment").props.render()
@@ -148,34 +131,35 @@ describe("App", () => {
   });
 
   describe("search customers", () => {
-    it("has a button to search customers", () => {
-      render(<App />);
-      const secondButton = element(
-        "menu > li:nth-of-type(2) > button"
-      );
-      expect(secondButton).toContainText("Search customers");
+    let dispatchSpy;
+
+    beforeEach(() => {
+      dispatchSpy = jest.fn();
     });
 
-    const navigateToSearchCustomers = () =>
-      click(element("menu > li:nth-of-type(2) > button"));
-
-    const searchFor = (customer) =>
-      propsOf(CustomerSearch).renderCustomerActions(customer);
-
-    it("displays the CustomerSearch when button is clicked", async () => {
-      render(<App />);
-      navigateToSearchCustomers();
-      expect(element("#CustomerSearch")).not.toBeNull();
-    });
-
-    it("passes a button to the CustomerSearch named Create appointment", async () => {
-      render(<App history={{ push: historySpy }} />);
-      navigateToSearchCustomers();
-      const buttonContainer = renderAdditional(searchFor());
-      expect(buttonContainer.firstChild).toBeElementWithTag(
-        "button"
+    const renderSearchActionsForCustomer = (customer) => {
+      render(
+        <App
+          history={{ push: historySpy }}
+          setCustomerForAppointment={dispatchSpy}
+        />
       );
-      expect(buttonContainer.firstChild).toContainText(
+      const customerSearch = routeFor(
+        "/searchCustomers"
+      ).props.render();
+      const searchActionsComponent =
+        customerSearch.props.renderCustomerActions;
+      return searchActionsComponent(customer);
+    };
+
+    it("passes a button to the CustomerSearch named Create appointment", () => {
+      const button = childrenOf(
+        renderSearchActionsForCustomer()
+      )[0];
+      expect(button).toBeDefined();
+      expect(button.type).toEqual("button");
+      expect(button.props.role).toEqual("button");
+      expect(button.props.children).toEqual(
         "Create appointment"
       );
     });
@@ -191,15 +175,11 @@ describe("App", () => {
     });
 
     it("passes saved customer to AppointmentFormLoader when clicking the Create appointment button", () => {
-      render(<App />);
-      navigateToSearchCustomers();
-      const buttonContainer = renderAdditional(
-        searchFor(customer)
-      );
-      click(buttonContainer.firstChild);
-      expect(
-        propsOf(AppointmentFormLoader).original
-      ).toMatchObject({ customer: customer.id });
+      const button = childrenOf(
+        renderSearchActionsForCustomer(customer)
+      )[0];
+      click(button);
+      expect(dispatchSpy).toBeCalledWith(customer);
     });
   });
 });

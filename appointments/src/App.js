@@ -1,9 +1,10 @@
-import React, { useState, useCallback } from "react";
+import React, { useCallback } from "react";
 import { Route, Link, Switch } from "react-router-dom";
 import { AppointmentFormLoader } from "./AppointmentFormLoader";
 import { AppointmentsDayViewLoader } from "./AppointmentsDayViewLoader";
 import { CustomerForm } from "./CustomerForm";
 import { CustomerSearchRoute } from "./CustomerSearchRoute";
+import { connect } from "react-redux";
 
 const blankCustomer = {
   firstName: "",
@@ -35,16 +36,11 @@ export const MainScreen = () => (
   </>
 );
 
-export const App = ({ history }) => {
-  const [customer, setCustomer] = useState();
-
-  const transitionToAddAppointment = useCallback(
-    (customer) => {
-      setCustomer(customer);
-      history.push("/addAppointment");
-    },
-    [history]
-  );
+export const App = ({ history, setCustomerForAppointment }) => {
+  const transitionToAddAppointment = (customer) => {
+    setCustomerForAppointment(customer);
+    history.push("/addAppointment");
+  };
 
   const transitionToDayView = useCallback(
     () => history.push("/"),
@@ -66,7 +62,6 @@ export const App = ({ history }) => {
         render={() => (
           <CustomerForm
             original={blankCustomer}
-            onSave={transitionToAddAppointment}
           />
         )}
       />
@@ -95,3 +90,15 @@ export const App = ({ history }) => {
     </Switch>
   );
 };
+
+const mapDispatchToProps = {
+  setCustomerForAppointment: (customer) => ({
+    type: "SET_CUSTOMER_FOR_APPOINTMENT",
+    customer,
+  }),
+};
+
+export const ConnectedApp = connect(
+  null,
+  mapDispatchToProps
+)(App);
