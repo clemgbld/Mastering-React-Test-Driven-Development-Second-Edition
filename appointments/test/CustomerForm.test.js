@@ -171,6 +171,7 @@ describe("CustomerForm", () => {
       type: "ADD_CUSTOMER_REQUEST",
       customer: validCustomer,
     });
+  });
 
   it("renders error message when error prop is true", () => {
     renderWithStore(<CustomerForm original={validCustomer} />);

@@ -1,4 +1,6 @@
 import React from "react";
+import { expectRedux } from "expect-redux";
+import { act } from "react-dom/test-utils";
 import { bodyOfLastFetchRequest } from "./spyHelpers";
 import {
   fetchResponseOk,
@@ -6,15 +8,16 @@ import {
 } from "./builders/fetch";
 import {
   initializeReactContainer,
-  render,
-  field,
+  renderWithStore,
   form,
+  field,
   element,
   elements,
   clickAndWait,
   submitButton,
   labelFor,
   change,
+  store,
 } from "./reactTestExtensions";
 import { AppointmentForm } from "../src/AppointmentForm";
 import { today, todayAt, tomorrowAt } from "./builders/time";
@@ -41,6 +44,7 @@ describe("AppointmentForm", () => {
     selectableStylists: stylists,
     availableTimeSlots,
     original: blankAppointment,
+    onSave: () => {},
   };
 
   beforeEach(() => {
@@ -64,17 +68,17 @@ describe("AppointmentForm", () => {
   };
 
   it("renders a form", () => {
-    render(<AppointmentForm {...testProps} />);
+    renderWithStore(<AppointmentForm {...testProps} />);
     expect(form()).not.toBeNull();
   });
 
   it("renders a submit button", () => {
-    render(<AppointmentForm {...testProps} />);
+    renderWithStore(<AppointmentForm {...testProps} />);
     expect(submitButton()).not.toBeNull();
   });
 
   it("calls fetch with the right properties when submitting data", async () => {
-    render(<AppointmentForm {...testProps} />);
+    renderWithStore(<AppointmentForm {...testProps} />);
     await clickAndWait(submitButton());
     expect(global.fetch).toBeCalledWith(
       "/appointments",
@@ -91,7 +95,9 @@ describe("AppointmentForm", () => {
     global.fetch.mockResolvedValue(fetchResponseOk({}));
     const saveSpy = jest.fn();
 
-    render(<AppointmentForm {...testProps} onSave={saveSpy} />);
+    renderWithStore(
+      <AppointmentForm {...testProps} onSave={saveSpy} />
+    );
     await clickAndWait(submitButton());
 
     expect(saveSpy).toBeCalled();
@@ -101,7 +107,9 @@ describe("AppointmentForm", () => {
     global.fetch.mockResolvedValue(fetchResponseError());
     const saveSpy = jest.fn();
 
-    render(<AppointmentForm {...testProps} onSave={saveSpy} />);
+    renderWithStore(
+      <AppointmentForm {...testProps} onSave={saveSpy} />
+    );
     await clickAndWait(submitButton());
 
     expect(saveSpy).not.toBeCalled();
@@ -110,7 +118,7 @@ describe("AppointmentForm", () => {
   it("renders error message when fetch call fails", async () => {
     global.fetch.mockResolvedValue(fetchResponseError());
 
-    render(<AppointmentForm {...testProps} />);
+    renderWithStore(<AppointmentForm {...testProps} />);
     await clickAndWait(submitButton());
 
     expect(element(".error")).toContainText("error occurred");
@@ -120,7 +128,7 @@ describe("AppointmentForm", () => {
     global.fetch.mockResolvedValueOnce(fetchResponseError());
     global.fetch.mockResolvedValue(fetchResponseOk());
 
-    render(<AppointmentForm {...testProps} />);
+    renderWithStore(<AppointmentForm {...testProps} />);
     await clickAndWait(submitButton());
     await clickAndWait(submitButton());
 
@@ -128,12 +136,12 @@ describe("AppointmentForm", () => {
   });
 
   it("passes the customer id to fetch when submitting", async () => {
-    const appointment = {
-      ...blankAppointment,
-      customer: "123",
-    };
-    render(
-      <AppointmentForm {...testProps} original={appointment} />
+    renderWithStore(<AppointmentForm {...testProps} />);
+    await act(async () =>
+      store.dispatch({
+        type: "SET_CUSTOMER_FOR_APPOINTMENT",
+        customer: { id: "123" },
+      })
     );
     await clickAndWait(submitButton());
     expect(bodyOfLastFetchRequest()).toMatchObject({
@@ -143,14 +151,14 @@ describe("AppointmentForm", () => {
 
   const itRendersAsASelectBox = (fieldName) => {
     it("renders as a select box", () => {
-      render(<AppointmentForm {...testProps} />);
+      renderWithStore(<AppointmentForm {...testProps} />);
       expect(field(fieldName)).toBeElementWithTag("select");
     });
   };
 
   const itInitiallyHasABlankValueChosen = (fieldName) => {
     it("has a blank value as the first value", () => {
-      render(
+      renderWithStore(
         <AppointmentForm
           {...testProps}
           original={blankAppointment}
@@ -164,7 +172,7 @@ describe("AppointmentForm", () => {
   const itPreselectsExistingValue = (fieldName, existing) => {
     it("pre-selects the existing value", () => {
       const appointment = { [fieldName]: existing };
-      render(
+      renderWithStore(
         <AppointmentForm
           {...testProps}
           original={appointment}
@@ -177,19 +185,19 @@ describe("AppointmentForm", () => {
 
   const itRendersALabel = (fieldName, text) => {
     it("renders a label for the field", () => {
-      render(<AppointmentForm {...testProps} />);
+      renderWithStore(<AppointmentForm {...testProps} />);
       expect(labelFor(fieldName)).not.toBeNull();
     });
 
     it(`render '${text}' as the label content`, () => {
-      render(<AppointmentForm {...testProps} />);
+      renderWithStore(<AppointmentForm {...testProps} />);
       expect(labelFor(fieldName)).toContainText(text);
     });
   };
 
   const itAssignsAnIdThatMatchesTheLabelId = (fieldName) => {
     it("assigns an id that matches the label id", () => {
-      render(<AppointmentForm {...testProps} />);
+      renderWithStore(<AppointmentForm {...testProps} />);
       expect(field(fieldName).id).toEqual(fieldName);
     });
   };
@@ -197,7 +205,7 @@ describe("AppointmentForm", () => {
   const itSubmitsExistingValue = (fieldName, existing) => {
     it("saves existing value when submitted", async () => {
       const appointment = { [fieldName]: existing };
-      render(
+      renderWithStore(
         <AppointmentForm
           {...testProps}
           original={appointment}
@@ -213,7 +221,7 @@ describe("AppointmentForm", () => {
 
   const itSubmitsNewValue = (fieldName, newValue) => {
     it("saves new value when submitted", async () => {
-      render(<AppointmentForm {...testProps} />);
+      renderWithStore(<AppointmentForm {...testProps} />);
       change(field(fieldName), newValue);
       await clickAndWait(submitButton());
 
@@ -233,7 +241,7 @@ describe("AppointmentForm", () => {
     itSubmitsNewValue("service", "Blow-dry");
 
     it("lists all salon services", () => {
-      render(
+      renderWithStore(
         <AppointmentForm
           {...testProps}
           selectableServices={services}
@@ -264,7 +272,7 @@ describe("AppointmentForm", () => {
 
       const appointment = { service: "1" };
 
-      render(
+      renderWithStore(
         <AppointmentForm
           {...testProps}
           original={appointment}
@@ -282,12 +290,12 @@ describe("AppointmentForm", () => {
 
   describe("time slot table", () => {
     it("renders a table for time slots with an id", () => {
-      render(<AppointmentForm {...testProps} />);
+      renderWithStore(<AppointmentForm {...testProps} />);
       expect(element("table#time-slots")).not.toBeNull();
     });
 
     it("renders a time slot for every half an hour between open and close times", () => {
-      render(
+      renderWithStore(
         <AppointmentForm
           {...testProps}
           salonOpensAt={9}
@@ -301,14 +309,14 @@ describe("AppointmentForm", () => {
     });
 
     it("renders an empty cell at the start of the header row", () => {
-      render(<AppointmentForm {...testProps} />);
+      renderWithStore(<AppointmentForm {...testProps} />);
       const headerRow = element("thead > tr");
       expect(headerRow.firstChild).toContainText("");
     });
 
     it("renders a week of available dates", () => {
       const specificDate = new Date(2018, 11, 1);
-      render(
+      renderWithStore(
         <AppointmentForm {...testProps} today={specificDate} />
       );
       const dates = elements("thead >* th:not(:first-child)");
@@ -339,7 +347,7 @@ describe("AppointmentForm", () => {
         },
       ];
 
-      render(
+      renderWithStore(
         <AppointmentForm
           {...testProps}
           availableTimeSlots={availableTimeSlots}
@@ -349,7 +357,7 @@ describe("AppointmentForm", () => {
     });
 
     it("does not render radio buttons for unavailable time slots", () => {
-      render(
+      renderWithStore(
         <AppointmentForm
           {...testProps}
           availableTimeSlots={[]}
@@ -359,7 +367,7 @@ describe("AppointmentForm", () => {
     });
 
     it("sets radio button values to the startsAt value of the corresponding appointment", () => {
-      render(
+      renderWithStore(
         <AppointmentForm
           {...testProps}
           availableTimeSlots={availableTimeSlots}
@@ -378,7 +386,7 @@ describe("AppointmentForm", () => {
       const appointment = {
         startsAt: availableTimeSlots[1].startsAt,
       };
-      render(
+      renderWithStore(
         <AppointmentForm
           {...testProps}
           original={appointment}
@@ -392,7 +400,7 @@ describe("AppointmentForm", () => {
       const appointment = {
         startsAt: availableTimeSlots[1].startsAt,
       };
-      render(
+      renderWithStore(
         <AppointmentForm
           {...testProps}
           original={appointment}
@@ -409,7 +417,7 @@ describe("AppointmentForm", () => {
       const appointment = {
         startsAt: availableTimeSlots[0].startsAt,
       };
-      render(
+      renderWithStore(
         <AppointmentForm
           {...testProps}
           original={appointment}
@@ -435,7 +443,7 @@ describe("AppointmentForm", () => {
         },
       ];
 
-      render(
+      renderWithStore(
         <AppointmentForm
           {...testProps}
           availableTimeSlots={availableTimeSlots}

@@ -2,7 +2,7 @@ import { storeSpy, expectRedux } from "expect-redux";
 import {
   fetchResponseOk,
   fetchResponseError,
-} from "../spyHelpers";
+} from "../builders/fetch";
 import {
   itMaintainsExistingState,
   itSetsStatus,
