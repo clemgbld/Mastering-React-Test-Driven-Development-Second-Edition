@@ -24,6 +24,7 @@ export const CustomerForm = ({ original, onSave }) => {
       body: JSON.stringify(customer),
     });
     if (result.ok) {
+      setError(false);
       const customerWithId = await result.json();
       onSave(customerWithId);
     } else {

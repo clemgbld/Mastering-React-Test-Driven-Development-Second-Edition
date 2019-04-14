@@ -189,7 +189,7 @@ describe("CustomerForm", () => {
 
   describe("when POST request returns an error", () => {
     beforeEach(() => {
-      global.fetch.mockResolvedValue(fetchResponseError());
+      global.fetch.mockResolvedValueOnce(fetchResponseError());
     });
 
     it("does not notify onSave if the POST request returns an error", async () => {
@@ -211,6 +211,20 @@ describe("CustomerForm", () => {
       await clickAndWait(submitButton());
 
       expect(element(".error")).toContainText("error occurred");
+    });
+
+    it("clears error message when fetch call succeeds", async () => {
+      global.fetch.mockResolvedValue(fetchResponseOk());
+      render(
+        <CustomerForm
+          original={blankCustomer}
+          onSave={() => {}}
+        />
+      );
+      await clickAndWait(submitButton());
+      await clickAndWait(submitButton());
+
+      expect(element(".error")).toBeNull();
     });
   });
 });
