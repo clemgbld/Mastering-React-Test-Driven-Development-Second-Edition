@@ -309,6 +309,35 @@ describe("CustomerForm", () => {
       });
     };
 
+    const itClearsFieldError = (fieldName, fieldValue) => {
+      it(`clears ${fieldName} error when user corrects it`, async () => {
+        render(<CustomerForm original={validCustomer} />);
+
+        withFocus(field(fieldName), () =>
+          change(field(fieldName), "")
+        );
+
+        withFocus(field(fieldName), () => {
+          change(field(fieldName), fieldValue);
+        });
+
+        expect(element(".error")).toBeNull();
+      });
+    };
+
+    const itDoesNotInvalidateFieldOnKeypress = (
+      fieldName,
+      fieldValue
+    ) => {
+      it(`does not invalidate ${fieldName} field on keypress`, async () => {
+        render(<CustomerForm original={validCustomer} />);
+
+        change(field(fieldName), fieldValue);
+
+        expect(element(".error")).toBeNull();
+      });
+    };
+
     itInvalidatesFieldWithValue(
       "firstName",
       " ",
@@ -329,6 +358,14 @@ describe("CustomerForm", () => {
       "invalid",
       "Only numbers, spaces and these symbols are allowed: ( ) + -"
     );
+
+    itClearsFieldError("firstName", "name");
+    itClearsFieldError("lastName", "name");
+    itClearsFieldError("phoneNumber", "1234567890");
+
+    itDoesNotInvalidateFieldOnKeypress("firstName", "");
+    itDoesNotInvalidateFieldOnKeypress("lastName", "");
+    itDoesNotInvalidateFieldOnKeypress("phoneNumber", "");
 
     it("accepts standard phone number characters when validating", () => {
       render(<CustomerForm original={validCustomer} />);
