@@ -1,13 +1,16 @@
 import React from "react";
 import { fetchResponseOk } from "../builders/fetch";
+import { expectRedux } from "expect-redux";
 import {
   initializeReactContainer,
-  renderAndWait,
+  renderWithStore,
   change,
   element,
   elements,
   textOf,
+  store,
 } from "../reactTestExtensions";
+import { MemoryRouter } from "react-router-dom";
 import * as SearchButtonsExports from "../../src/CustomerSearch/SearchButtons";
 import { CustomerSearch } from "../../src/CustomerSearch/CustomerSearch";
 
@@ -29,7 +32,7 @@ describe("CustomerSearch", () => {
     initializeReactContainer();
     jest
       .spyOn(global, "fetch")
-      .mockResolvedValue(fetchResponseOk([]));
+      .mockResolvedValue(fetchResponseOk(oneCustomer));
     historySpy = jest.fn();
     actionSpy = jest.fn(() => {});
     jest
@@ -38,7 +41,7 @@ describe("CustomerSearch", () => {
   });
 
   const renderCustomerSearch = (props) =>
-    renderAndWait(
+    renderWithStore(
       <CustomerSearch
         {...props}
         history={{ push: historySpy }}
@@ -58,18 +61,27 @@ describe("CustomerSearch", () => {
     ]);
   });
 
-  it("fetches all customer data when component mounts", async () => {
-    await renderCustomerSearch();
-    expect(global.fetch).toBeCalledWith("/customers", {
-      method: "GET",
-      credentials: "same-origin",
-      headers: { "Content-Type": "application/json" },
+  it("dispatches SEARCH_CUSTOMERS_REQUEST when component mounts", async () => {
+    const lastRowIds = [123, 234, 345];
+    const searchTerm = "test";
+    const limit = 10;
+    await renderCustomerSearch({
+      lastRowIds,
+      searchTerm,
+      limit,
+    });
+    return expectRedux(store).toDispatchAnAction().matching({
+      type: "SEARCH_CUSTOMERS_REQUEST",
+      lastRowIds,
+      searchTerm,
+      limit,
     });
   });
 
   it("renders all customer data in a table row", async () => {
     global.fetch.mockResolvedValue(fetchResponseOk(oneCustomer));
     await renderCustomerSearch();
+    await new Promise(setTimeout);
     const columns = elements("table > tbody > tr > td");
     expect(columns[0]).toContainText("A");
     expect(columns[1]).toContainText("B");
@@ -79,6 +91,7 @@ describe("CustomerSearch", () => {
   it("renders multiple customer rows", async () => {
     global.fetch.mockResolvedValue(fetchResponseOk(twoCustomers));
     await renderCustomerSearch();
+    await new Promise(setTimeout);
     const rows = elements("table tbody tr");
     expect(rows[1].childNodes[0]).toContainText("C");
   });
@@ -98,9 +111,9 @@ describe("CustomerSearch", () => {
   });
 
   it("displays provided action buttons for each customer", async () => {
-    actionSpy.mockResolvedValue("actions");
-    global.fetch.mockResolvedValue(fetchResponseOk(oneCustomer));
+    actionSpy.mockReturnValue("actions");
     await renderCustomerSearch();
+    await new Promise(setTimeout);
     const rows = elements("table tbody td");
     expect(rows[rows.length - 1]).toContainText("actions");
   });
@@ -108,11 +121,15 @@ describe("CustomerSearch", () => {
   it("passes customer to the renderCustomerActions prop", async () => {
     global.fetch.mockResolvedValue(fetchResponseOk(oneCustomer));
     await renderCustomerSearch();
+    await new Promise(setTimeout);
     expect(actionSpy).toBeCalledWith(oneCustomer[0]);
   });
 
   it("renders SearchButtons with props", async () => {
-    global.fetch.mockResolvedValue(fetchResponseOk(tenCustomers));
+    store.dispatch({
+      type: "SEARCH_CUSTOMERS_SUCCESSFUL",
+      customers: tenCustomers,
+    });
 
     await renderCustomerSearch({
       searchTerm: "term",
