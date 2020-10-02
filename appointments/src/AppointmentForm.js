@@ -110,28 +110,38 @@ const TimeSlotTable = ({
   );
 };
 
-const mapStateToProps = ({ appointment: { customer } }) => ({
+const mapStateToProps = ({
+  appointment: { customer, error },
+}) => ({
   customer,
+  error,
 });
+
+const mapDispatchToProps = {
+  addAppointmentRequest: (appointment, customer) => ({
+    type: "ADD_APPOINTMENT_REQUEST",
+    appointment,
+    customer,
+  }),
+};
 
 export const AppointmentForm = connect(
   mapStateToProps,
-  null
+  mapDispatchToProps
 )(
   ({
     original,
     selectableServices,
     selectableStylists,
     serviceStylists,
-    onSave,
     salonOpensAt,
     salonClosesAt,
     today,
     availableTimeSlots,
     customer,
+    addAppointmentRequest,
+    error,
   }) => {
-    const [error, setError] = useState(false);
-
     const [appointment, setAppointment] = useState(original);
 
     const handleSelectBoxChange = ({
@@ -162,21 +172,7 @@ export const AppointmentForm = connect(
 
     const handleSubmit = async (event) => {
       event.preventDefault();
-      const result = await window.fetch("/appointments", {
-        method: "POST",
-        credentials: "same-origin",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...appointment,
-          customer: customer.id,
-        }),
-      });
-      if (result.ok) {
-        setError(false);
-        onSave();
-      } else {
-        setError(true);
-      }
+      addAppointmentRequest(appointment, customer);
     };
 
     return (

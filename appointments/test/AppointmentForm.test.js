@@ -77,62 +77,37 @@ describe("AppointmentForm", () => {
     expect(submitButton()).not.toBeNull();
   });
 
-  it("calls fetch with the right properties when submitting data", async () => {
-    renderWithStore(<AppointmentForm {...testProps} />);
-    await clickAndWait(submitButton());
-    expect(global.fetch).toBeCalledWith(
-      "/appointments",
-      expect.objectContaining({
-        method: "POST",
-        credentials: "same-origin",
-        headers: { "Content-Type": "application/json" },
-      })
-    );
-  });
-
-  it("notifies onSave when form is submitted", async () => {
-    const appointment = { id: 123 };
-    global.fetch.mockResolvedValue(fetchResponseOk({}));
-    const saveSpy = jest.fn();
+  it("dispatches ADD_APPOINTMENT_REQUEST when submitting data", async () => {
+    const appointment = {
+      service: "Blow-dry",
+      startsAt: 123,
+      stylist: "Joe",
+    };
+    const exampleCustomer = { id: 123 };
+    store.dispatch({
+      type: "SET_CUSTOMER_FOR_APPOINTMENT",
+      customer: exampleCustomer,
+    });
 
     renderWithStore(
-      <AppointmentForm {...testProps} onSave={saveSpy} />
+      <AppointmentForm {...testProps} original={appointment} />
     );
     await clickAndWait(submitButton());
 
-    expect(saveSpy).toBeCalled();
+    return expectRedux(store).toDispatchAnAction().matching({
+      type: "ADD_APPOINTMENT_REQUEST",
+      appointment,
+      customer: exampleCustomer,
+    });
   });
 
-  it("does not notify onSave if the POST request returns an error", async () => {
-    global.fetch.mockResolvedValue(fetchResponseError());
-    const saveSpy = jest.fn();
-
-    renderWithStore(
-      <AppointmentForm {...testProps} onSave={saveSpy} />
-    );
-    await clickAndWait(submitButton());
-
-    expect(saveSpy).not.toBeCalled();
-  });
-
-  it("renders error message when fetch call fails", async () => {
-    global.fetch.mockResolvedValue(fetchResponseError());
-
+  it("renders error message when error prop is true", async () => {
     renderWithStore(<AppointmentForm {...testProps} />);
-    await clickAndWait(submitButton());
+    await act(async () =>
+      store.dispatch({ type: "ADD_APPOINTMENT_FAILED" })
+    );
 
     expect(element(".error")).toContainText("error occurred");
-  });
-
-  it("clears error message when fetch call succeeds", async () => {
-    global.fetch.mockResolvedValueOnce(fetchResponseError());
-    global.fetch.mockResolvedValue(fetchResponseOk());
-
-    renderWithStore(<AppointmentForm {...testProps} />);
-    await clickAndWait(submitButton());
-    await clickAndWait(submitButton());
-
-    expect(element(".error")).toBeNull();
   });
 
   it("passes the customer id to fetch when submitting", async () => {

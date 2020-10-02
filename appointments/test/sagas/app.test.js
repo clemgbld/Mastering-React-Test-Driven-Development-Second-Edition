@@ -2,7 +2,7 @@ import { storeSpy, expectRedux } from "expect-redux";
 import { configureStore } from "../../src/store";
 import * as HistoryExports from "../../src/history";
 
-describe("customerAdded", () => {
+describe("app sagas", () => {
   let store, pushSpy;
 
   beforeEach(() => {
@@ -10,23 +10,37 @@ describe("customerAdded", () => {
     store = configureStore([storeSpy]);
   });
 
-  const dispatchRequest = (customer) =>
-    store.dispatch({
-      type: "ADD_CUSTOMER_SUCCESSFUL",
-      customer,
-    });
+  describe("appointmentAdded", () => {
+    const dispatchRequest = () =>
+      store.dispatch({
+        type: "ADD_APPOINTMENT_SUCCESSFUL",
+      });
 
-  it("pushes /addAppointment to history", () => {
-    dispatchRequest();
-    expect(pushSpy).toBeCalledWith("/addAppointment");
+    it("pushes / to history", () => {
+      dispatchRequest();
+      expect(pushSpy).toBeCalledWith("/");
+    });
   });
 
-  it("dispatches a SET_CUSTOMER_FOR_APPOINTMENT action", () => {
-    const customer = { id: 123 };
-    dispatchRequest(customer);
-    return expectRedux(store).toDispatchAnAction().matching({
-      type: "SET_CUSTOMER_FOR_APPOINTMENT",
-      customer,
+  describe("customerAdded", () => {
+    const dispatchRequest = (customer) =>
+      store.dispatch({
+        type: "ADD_CUSTOMER_SUCCESSFUL",
+        customer,
+      });
+
+    it("pushes /addAppointment to history", () => {
+      dispatchRequest();
+      expect(pushSpy).toBeCalledWith("/addAppointment");
+    });
+
+    it("dispatches a SET_CUSTOMER_FOR_APPOINTMENT action", () => {
+      const customer = { id: 123 };
+      dispatchRequest(customer);
+      return expectRedux(store).toDispatchAnAction().matching({
+        type: "SET_CUSTOMER_FOR_APPOINTMENT",
+        customer,
+      });
     });
   });
 });

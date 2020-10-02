@@ -122,14 +122,6 @@ describe("App", () => {
 
   const customer = { id: 123 };
 
-  it("navigates to / when AppointmentFormLoader is saved", () => {
-    render(<App history={{ push: historySpy }} />);
-    const onSave = routeFor("/addAppointment").props.render()
-      .props.onSave;
-    onSave();
-    expect(historySpy).toBeCalledWith("/");
-  });
-
   describe("search customers", () => {
     let dispatchSpy;
 

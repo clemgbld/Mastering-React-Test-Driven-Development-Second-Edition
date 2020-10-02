@@ -3,7 +3,8 @@ import {
   fetchResponseOk,
   fetchResponseError,
 } from "../builders/fetch";
-import { configureStore } from "../../src/store";D
+import { configureStore } from "../../src/store";
+D;
 
 describe("addCustomer", () => {
   const customer = { id: 123 };

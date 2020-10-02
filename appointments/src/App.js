@@ -42,11 +42,6 @@ export const App = ({ history, setCustomerForAppointment }) => {
     history.push("/addAppointment");
   };
 
-  const transitionToDayView = useCallback(
-    () => history.push("/"),
-    [history]
-  );
-
   const searchActions = (customer) => (
     <button
       onClick={() => transitionToAddAppointment(customer)}
@@ -73,7 +68,6 @@ export const App = ({ history, setCustomerForAppointment }) => {
               ...blankAppointment,
               customer: customer.id,
             }}
-            onSave={transitionToDayView}
           />
         )}
       />
