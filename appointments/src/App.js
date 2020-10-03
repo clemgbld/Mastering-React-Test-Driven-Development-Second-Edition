@@ -37,11 +37,6 @@ export const MainScreen = () => (
 );
 
 export const App = ({ history, setCustomerForAppointment }) => {
-  const transitionToAddAppointment = (customer) => {
-    setCustomerForAppointment(customer);
-    history.push("/addAppointment");
-  };
-
   const searchActions = (customer) => (
     <button
       onClick={() => transitionToAddAppointment(customer)}
@@ -87,7 +82,7 @@ export const App = ({ history, setCustomerForAppointment }) => {
 
 const mapDispatchToProps = {
   setCustomerForAppointment: (customer) => ({
-    type: "SET_CUSTOMER_FOR_APPOINTMENT",
+    type: "CUSTOMER_SELECTED",
     customer,
   }),
 };

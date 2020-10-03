@@ -156,16 +156,6 @@ describe("App", () => {
       );
     });
 
-    it("navigates to /addAppointment when clicking the Create appointment button", () => {
-      render(<App />);
-      navigateToSearchCustomers();
-      const buttonContainer = renderAdditional(
-        searchFor(customer)
-      );
-      click(buttonContainer.firstChild);
-      expect(historySpy).toBeCalledWith("/addAppointment");
-    });
-
     it("passes saved customer to AppointmentFormLoader when clicking the Create appointment button", () => {
       const button = childrenOf(
         renderSearchActionsForCustomer(customer)
