@@ -1,1 +1,1 @@
-# -Mastering-React-Test-Driven-Development-Second-Edition
+# Mastering-React-Test-Driven-Development-Second-Edition
