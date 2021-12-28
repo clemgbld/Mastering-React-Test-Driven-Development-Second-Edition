@@ -8,7 +8,6 @@ import {
 import {
   initializeReactContainer,
   render,
-  container,
   click,
   element,
   elements,
@@ -17,7 +16,7 @@ import {
 } from "./reactTestExtensions";
 
 describe("Appointment", () => {
-  let customer = {};
+  const blankCustomer = {};
 
   beforeEach(() => {
     initializeReactContainer();
@@ -27,85 +26,105 @@ describe("Appointment", () => {
     element("#appointmentView > table");
 
   it("renders a table", () => {
-    render(<Appointment customer={customer} />);
+    render(<Appointment customer={blankCustomer} />);
     expect(appointmentTable()).not.toBeNull();
   });
 
   it("renders the customer first name", () => {
-    customer = { firstName: "Ashley" };
+    const customer = { firstName: "Ashley" };
     render(<Appointment customer={customer} />);
     expect(appointmentTable()).toContainText("Ashley");
   });
 
   it("renders another customer first name", () => {
-    customer = { firstName: "Jordan" };
+    const customer = { firstName: "Jordan" };
     render(<Appointment customer={customer} />);
     expect(appointmentTable()).toContainText("Jordan");
   });
 
   it("renders the customer last name", () => {
-    customer = { lastName: "Jones" };
+    const customer = { lastName: "Jones" };
     render(<Appointment customer={customer} />);
     expect(appointmentTable()).toContainText("Jones");
   });
 
   it("renders another customer last name", () => {
-    customer = { lastName: "Smith" };
+    const customer = { lastName: "Smith" };
     render(<Appointment customer={customer} />);
     expect(appointmentTable()).toContainText("Smith");
   });
 
   it("renders the customer phone number", () => {
-    customer = { phoneNumber: "123456789" };
+    const customer = { phoneNumber: "123456789" };
     render(<Appointment customer={customer} />);
     expect(appointmentTable()).toContainText("123456789");
   });
 
   it("renders another customer phone number", () => {
-    customer = { phoneNumber: "234567890" };
+    const customer = { phoneNumber: "234567890" };
     render(<Appointment customer={customer} />);
     expect(appointmentTable()).toContainText("234567890");
   });
 
   it("renders the stylist name", () => {
-    render(<Appointment customer={customer} stylist="Sam" />);
+    render(
+      <Appointment customer={blankCustomer} stylist="Sam" />
+    );
     expect(appointmentTable()).toContainText("Sam");
   });
 
   it("renders another stylist name", () => {
-    render(<Appointment customer={customer} stylist="Jo" />);
+    render(
+      <Appointment customer={blankCustomer} stylist="Jo" />
+    );
     expect(appointmentTable()).toContainText("Jo");
   });
 
   it("renders the salon service", () => {
-    render(<Appointment customer={customer} service="Cut" />);
+    render(
+      <Appointment customer={blankCustomer} service="Cut" />
+    );
     expect(appointmentTable()).toContainText("Cut");
   });
 
   it("renders another salon service", () => {
     render(
-      <Appointment customer={customer} service="Blow-dry" />
+      <Appointment
+        customer={blankCustomer}
+        service="Blow-dry"
+      />
     );
     expect(appointmentTable()).toContainText("Blow-dry");
   });
 
   it("renders the appointments notes", () => {
-    render(<Appointment customer={customer} notes="abc" />);
+    render(
+      <Appointment customer={blankCustomer} notes="abc" />
+    );
     expect(appointmentTable()).toContainText("abc");
   });
 
   it("renders other appointment notes", () => {
-    render(<Appointment customer={customer} notes="def" />);
+    render(
+      <Appointment customer={blankCustomer} notes="def" />
+    );
     expect(appointmentTable()).toContainText("def");
   });
 
-  it("renders a heading with the time", () => {
+  it("renders an h3 element", () => {
+    render(<Appointment customer={blankCustomer} />);
+    expect(element("h3")).not.toBeNull();
+  });
+
+  it("renders the time as the heading", () => {
     const today = new Date();
     const timestamp = today.setHours(9, 0, 0);
     render(
-      <Appointment customer={customer} startsAt={timestamp} />
+      <Appointment
+        customer={blankCustomer}
+        startsAt={timestamp}
+      />
     );
-    expect(element("h3")).not.toBeNull();
     expect(element("h3")).toContainText(
       "Today’s appointment at 09:00"
     );
@@ -159,7 +178,7 @@ describe("AppointmentsDayView", () => {
 
   it("initially shows a message saying there are no appointments today", () => {
     render(<AppointmentsDayView appointments={[]} />);
-    expect(container).toContainText(
+    expect(document.body).toContainText(
       "There are no appointments scheduled for today."
     );
   });
@@ -168,7 +187,7 @@ describe("AppointmentsDayView", () => {
     render(
       <AppointmentsDayView appointments={twoAppointments} />
     );
-    expect(container).toContainText("Ashley");
+    expect(document.body).toContainText("Ashley");
   });
 
   it("has a button element in each li", () => {
@@ -187,7 +206,7 @@ describe("AppointmentsDayView", () => {
       <AppointmentsDayView appointments={twoAppointments} />
     );
     click(secondButton());
-    expect(container).toContainText("Jordan");
+    expect(document.body).toContainText("Jordan");
   });
 
   it("adds toggled class to button when selected", () => {
@@ -195,13 +214,13 @@ describe("AppointmentsDayView", () => {
       <AppointmentsDayView appointments={twoAppointments} />
     );
     click(secondButton());
-    expect(secondButton().className).toMatch("toggled");
+    expect(secondButton()).toHaveClass("toggled");
   });
 
   it("does not add toggled class if button is not selected", () => {
     render(
       <AppointmentsDayView appointments={twoAppointments} />
     );
-    expect(secondButton().className).not.toMatch("toggled");
+    expect(secondButton()).not.toHaveClass("toggled");
   });
 });

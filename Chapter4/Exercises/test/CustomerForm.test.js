@@ -1,114 +1,140 @@
 import React from "react";
 import {
   initializeReactContainer,
-  container,
   render,
-  form,
-  labelFor,
   element,
-  submit,
+  form,
+  field,
+  click,
   change,
+  submitButton,
 } from "./reactTestExtensions";
 import { CustomerForm } from "../src/CustomerForm";
 
 describe("CustomerForm", () => {
+  const blankCustomer = {};
+
   beforeEach(() => {
     initializeReactContainer();
   });
 
-  const field = (fieldName) =>
-    form("customer").elements[fieldName];
-
   it("renders a form", () => {
-    render(<CustomerForm />);
-    expect(form("customer")).not.toBeNull();
+    render(<CustomerForm original={blankCustomer} />);
+    expect(form()).not.toBeNull();
   });
 
-  it("has a submit button", () => {
-    render(<CustomerForm />);
-    const submitButton = element('input[type="submit"]');
-    expect(submitButton).not.toBeNull();
+  it("renders a submit button", () => {
+    render(<CustomerForm original={blankCustomer} />);
+    expect(submitButton()).not.toBeNull();
   });
 
   const itRendersAsATextBox = (fieldName) =>
     it("renders as a text box", () => {
-      render(<CustomerForm />);
-      expect(field(fieldName)).toBeInputFieldOfType("text");
+      render(<CustomerForm original={blankCustomer} />);
+      expect(field(fieldName)).not.toBeNull();
+      expect(field(fieldName).tagName).toEqual("INPUT");
+      expect(field(fieldName).type).toEqual("text");
     });
 
-  const itIncludesTheExistingValue = (fieldName) =>
+  const itIncludesTheExistingValue = (fieldName, existing) =>
     it("includes the existing value", () => {
-      render(<CustomerForm {...{ [fieldName]: "value" }} />);
-      expect(field(fieldName).value).toEqual("value");
+      const customer = { [fieldName]: existing };
+      render(<CustomerForm original={customer} />);
+      expect(field(fieldName).value).toEqual(existing);
     });
 
-  const itRendersALabel = (fieldName, text) =>
-    it("renders a label", () => {
-      render(<CustomerForm />);
-      expect(labelFor(fieldName)).toContainText(text);
+  const itRendersALabel = (fieldName, text) => {
+    it("renders a label for the text box", () => {
+      render(<CustomerForm original={blankCustomer} />);
+      const label = element(`label[for=${fieldName}]`);
+      expect(label).not.toBeNull();
     });
+
+    it(`renders '${text}' as the label content`, () => {
+      render(<CustomerForm original={blankCustomer} />);
+      const label = element(`label[for=${fieldName}]`);
+      expect(label).toContainText(text);
+    });
+  };
 
   const itAssignsAnIdThatMatchesTheLabelId = (fieldName) =>
     it("assigns an id that matches the label id", () => {
-      render(<CustomerForm />);
+      render(<CustomerForm original={blankCustomer} />);
       expect(field(fieldName).id).toEqual(fieldName);
     });
 
   const itSubmitsExistingValue = (fieldName, value) =>
     it("saves existing value when submitted", () => {
       expect.hasAssertions();
+      const customer = { [fieldName]: value };
       render(
         <CustomerForm
-          {...{ [fieldName]: value }}
+          original={customer}
           onSubmit={(props) =>
             expect(props[fieldName]).toEqual(value)
           }
         />
       );
-      submit(form("customer"));
+      click(submitButton());
     });
 
   const itSubmitsNewValue = (fieldName, value) =>
     it("saves new value when submitted", () => {
       expect.hasAssertions();
+      const customer = { [fieldName]: "" };
       render(
         <CustomerForm
-          {...{ [fieldName]: "existingValue" }}
+          original={customer}
           onSubmit={(props) =>
             expect(props[fieldName]).toEqual(value)
           }
         />
       );
-      change(field(fieldName), {
-        target: { value, name: fieldName },
-      });
-      submit(form("customer"));
+      change(field(fieldName), value);
+      click(submitButton());
     });
 
   describe("first name field", () => {
     itRendersAsATextBox("firstName");
-    itIncludesTheExistingValue("firstName");
+    itIncludesTheExistingValue("firstName", "existingValue");
     itRendersALabel("firstName", "First name");
     itAssignsAnIdThatMatchesTheLabelId("firstName");
-    itSubmitsExistingValue("firstName", "value");
+    itSubmitsExistingValue("firstName", "existingValue");
     itSubmitsNewValue("firstName", "newValue");
   });
 
   describe("last name field", () => {
     itRendersAsATextBox("lastName");
-    itIncludesTheExistingValue("lastName");
+    itIncludesTheExistingValue("lastName", "existingValue");
     itRendersALabel("lastName", "Last name");
     itAssignsAnIdThatMatchesTheLabelId("lastName");
-    itSubmitsExistingValue("lastName", "value");
+    itSubmitsExistingValue("lastName", "existingValue");
     itSubmitsNewValue("lastName", "newValue");
   });
 
   describe("phone number field", () => {
     itRendersAsATextBox("phoneNumber");
-    itIncludesTheExistingValue("phoneNumber");
+    itIncludesTheExistingValue("phoneNumber", "12345");
     itRendersALabel("phoneNumber", "Phone number");
     itAssignsAnIdThatMatchesTheLabelId("phoneNumber");
     itSubmitsExistingValue("phoneNumber", "12345");
     itSubmitsNewValue("phoneNumber", "67890");
+  });
+
+  it("prevents the default action when submitting the form", () => {
+    render(
+      <CustomerForm
+        original={blankCustomer}
+        onSubmit={() => {}}
+      />
+    );
+
+    const event = new Event("submit", {
+      bubbles: true,
+      cancelable: true,
+    });
+    form().dispatchEvent(event);
+
+    expect(event.defaultPrevented).toBe(true);
   });
 });

@@ -69,6 +69,7 @@ input {
   width: 100%;
   font-size: 1em;
   height: 30px;
+  border: 1px solid #579;
 }
 
 label {
@@ -114,12 +115,16 @@ table#time-slots th {
   text-align: center;
   border: 0.5px solid black;
   width: 12.5%;
+  white-space: nowrap;
 }
 
 table#time-slots {
   grid-column-start: 2;
   grid-column-end: 3;
   width: 450px;
+  max-height: 400px;
+  overflow-y: scroll;
+  display: block;
 }
 
 thead {

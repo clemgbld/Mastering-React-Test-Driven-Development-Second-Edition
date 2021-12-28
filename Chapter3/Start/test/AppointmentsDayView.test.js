@@ -1,106 +1,133 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import ReactTestUtils, { act } from "react-dom/test-utils";
+import { act } from "react-dom/test-utils";
 import {
   Appointment,
   AppointmentsDayView,
 } from "../src/AppointmentsDayView";
 
 describe("Appointment", () => {
+  const blankCustomer = {};
   let container;
-  let customer = {};
 
   beforeEach(() => {
     container = document.createElement("div");
+    document.body.replaceChildren(container);
   });
 
   const render = (component) =>
     act(() => ReactDOM.createRoot(container).render(component));
 
   const appointmentTable = () =>
-    container.querySelector("#appointmentView > table");
+    document.querySelector("#appointmentView > table");
 
   it("renders a table", () => {
-    render(<Appointment customer={customer} />);
+    render(<Appointment customer={blankCustomer} />);
     expect(appointmentTable()).not.toBeNull();
   });
 
   it("renders the customer first name", () => {
-    customer = { firstName: "Ashley" };
+    const customer = { firstName: "Ashley" };
     render(<Appointment customer={customer} />);
-    expect(appointmentTable().textContent).toMatch("Ashley");
+    expect(appointmentTable().textContent).toContain("Ashley");
   });
 
   it("renders another customer first name", () => {
-    customer = { firstName: "Jordan" };
+    const customer = { firstName: "Jordan" };
     render(<Appointment customer={customer} />);
-    expect(appointmentTable().textContent).toMatch("Jordan");
+    expect(appointmentTable().textContent).toContain("Jordan");
   });
 
   it("renders the customer last name", () => {
-    customer = { lastName: "Jones" };
+    const customer = { lastName: "Jones" };
     render(<Appointment customer={customer} />);
-    expect(appointmentTable().textContent).toMatch("Jones");
+    expect(appointmentTable().textContent).toContain("Jones");
   });
 
   it("renders another customer last name", () => {
-    customer = { lastName: "Smith" };
+    const customer = { lastName: "Smith" };
     render(<Appointment customer={customer} />);
-    expect(appointmentTable().textContent).toMatch("Smith");
+    expect(appointmentTable().textContent).toContain("Smith");
   });
 
   it("renders the customer phone number", () => {
-    customer = { phoneNumber: "123456789" };
+    const customer = { phoneNumber: "123456789" };
     render(<Appointment customer={customer} />);
-    expect(appointmentTable().textContent).toMatch("123456789");
+    expect(appointmentTable().textContent).toContain(
+      "123456789"
+    );
   });
 
   it("renders another customer phone number", () => {
-    customer = { phoneNumber: "234567890" };
+    const customer = { phoneNumber: "234567890" };
     render(<Appointment customer={customer} />);
-    expect(appointmentTable().textContent).toMatch("234567890");
+    expect(appointmentTable().textContent).toContain(
+      "234567890"
+    );
   });
 
   it("renders the stylist name", () => {
-    render(<Appointment customer={customer} stylist="Sam" />);
-    expect(appointmentTable().textContent).toMatch("Sam");
+    render(
+      <Appointment customer={blankCustomer} stylist="Sam" />
+    );
+    expect(appointmentTable().textContent).toContain("Sam");
   });
 
   it("renders another stylist name", () => {
-    render(<Appointment customer={customer} stylist="Jo" />);
-    expect(appointmentTable().textContent).toMatch("Jo");
+    render(
+      <Appointment customer={blankCustomer} stylist="Jo" />
+    );
+    expect(appointmentTable().textContent).toContain("Jo");
   });
 
   it("renders the salon service", () => {
-    render(<Appointment customer={customer} service="Cut" />);
-    expect(appointmentTable().textContent).toMatch("Cut");
+    render(
+      <Appointment customer={blankCustomer} service="Cut" />
+    );
+    expect(appointmentTable().textContent).toContain("Cut");
   });
 
   it("renders another salon service", () => {
     render(
-      <Appointment customer={customer} service="Blow-dry" />
+      <Appointment
+        customer={blankCustomer}
+        service="Blow-dry"
+      />
     );
-    expect(appointmentTable().textContent).toMatch("Blow-dry");
+    expect(appointmentTable().textContent).toContain(
+      "Blow-dry"
+    );
   });
 
   it("renders the appointments notes", () => {
-    render(<Appointment customer={customer} notes="abc" />);
-    expect(appointmentTable().textContent).toMatch("abc");
+    render(
+      <Appointment customer={blankCustomer} notes="abc" />
+    );
+    expect(appointmentTable().textContent).toContain("abc");
   });
 
   it("renders other appointment notes", () => {
-    render(<Appointment customer={customer} notes="def" />);
-    expect(appointmentTable().textContent).toMatch("def");
+    render(
+      <Appointment customer={blankCustomer} notes="def" />
+    );
+    expect(appointmentTable().textContent).toContain("def");
   });
 
-  it("renders a heading with the time", () => {
+  it("renders an h3 element", () => {
+    render(<Appointment customer={blankCustomer} />);
+    expect(document.querySelector("h3")).not.toBeNull();
+  });
+
+  it("renders the time as the heading", () => {
     const today = new Date();
     const timestamp = today.setHours(9, 0, 0);
     render(
-      <Appointment customer={customer} startsAt={timestamp} />
+      <Appointment
+        customer={blankCustomer}
+        startsAt={timestamp}
+      />
     );
-    expect(container.querySelector("h3")).not.toBeNull();
-    expect(container.querySelector("h3").textContent).toEqual(
+    expect(document.querySelector("h3").textContent).toEqual(
       "Today’s appointment at 09:00"
     );
   });
@@ -123,6 +150,7 @@ describe("AppointmentsDayView", () => {
 
   beforeEach(() => {
     container = document.createElement("div");
+    document.body.replaceChildren(container);
   });
 
   const render = (component) =>
@@ -131,13 +159,13 @@ describe("AppointmentsDayView", () => {
   it("renders a div with the right id", () => {
     render(<AppointmentsDayView appointments={[]} />);
     expect(
-      container.querySelector("div#appointmentsDayView")
+      document.querySelector("div#appointmentsDayView")
     ).not.toBeNull();
   });
 
   it("renders an ol element to display appointments", () => {
     render(<AppointmentsDayView appointments={[]} />);
-    const listElement = container.querySelector("ol");
+    const listElement = document.querySelector("ol");
     expect(listElement).not.toBeNull();
   });
 
@@ -146,7 +174,7 @@ describe("AppointmentsDayView", () => {
       <AppointmentsDayView appointments={twoAppointments} />
     );
 
-    const listChildren = container.querySelectorAll("ol > li");
+    const listChildren = document.querySelectorAll("ol > li");
     expect(listChildren).toHaveLength(2);
   });
 
@@ -155,14 +183,14 @@ describe("AppointmentsDayView", () => {
       <AppointmentsDayView appointments={twoAppointments} />
     );
 
-    const listChildren = container.querySelectorAll("li");
+    const listChildren = document.querySelectorAll("li");
     expect(listChildren[0].textContent).toEqual("12:00");
     expect(listChildren[1].textContent).toEqual("13:00");
   });
 
   it("initially shows a message saying there are no appointments today", () => {
     render(<AppointmentsDayView appointments={[]} />);
-    expect(container.textContent).toMatch(
+    expect(document.body.textContent).toContain(
       "There are no appointments scheduled for today."
     );
   });
@@ -171,7 +199,7 @@ describe("AppointmentsDayView", () => {
     render(
       <AppointmentsDayView appointments={twoAppointments} />
     );
-    expect(container.textContent).toMatch("Ashley");
+    expect(document.body.textContent).toContain("Ashley");
   });
 
   it("has a button element in each li", () => {
@@ -179,7 +207,7 @@ describe("AppointmentsDayView", () => {
       <AppointmentsDayView appointments={twoAppointments} />
     );
 
-    const buttons = container.querySelectorAll("li > button");
+    const buttons = document.querySelectorAll("li > button");
 
     expect(buttons).toHaveLength(2);
     expect(buttons[0].type).toEqual("button");
@@ -189,25 +217,25 @@ describe("AppointmentsDayView", () => {
     render(
       <AppointmentsDayView appointments={twoAppointments} />
     );
-    const button = container.querySelectorAll("button")[1];
-    act(() => ReactTestUtils.Simulate.click(button));
-    expect(container.textContent).toMatch("Jordan");
+    const button = document.querySelectorAll("button")[1];
+    act(() => button.click());
+    expect(document.body.textContent).toContain("Jordan");
   });
 
   it("adds toggled class to button when selected", () => {
     render(
       <AppointmentsDayView appointments={twoAppointments} />
     );
-    const button = container.querySelectorAll("button")[1];
-    act(() => ReactTestUtils.Simulate.click(button));
-    expect(button.className).toMatch("toggled");
+    const button = document.querySelectorAll("button")[1];
+    act(() => button.click());
+    expect(button.className).toContain("toggled");
   });
 
   it("does not add toggled class if button is not selected", () => {
     render(
       <AppointmentsDayView appointments={twoAppointments} />
     );
-    const button = container.querySelectorAll("button")[1];
-    expect(button.className).not.toMatch("toggled");
+    const button = document.querySelectorAll("button")[1];
+    expect(button.className).not.toContain("toggled");
   });
 });

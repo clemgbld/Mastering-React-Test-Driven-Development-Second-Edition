@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import ReactTestUtils, { act } from "react-dom/test-utils";
+import { act } from "react-dom/test-utils";
 import {
   Appointment,
   AppointmentsDayView,
@@ -8,25 +8,27 @@ import {
 
 describe("Appointment", () => {
   let container;
-  let customer;
 
   beforeEach(() => {
     container = document.createElement("div");
+    document.body.replaceChildren(container);
   });
 
   const render = (component) =>
     act(() => ReactDOM.createRoot(container).render(component));
 
   it("renders the customer first name", () => {
-    customer = { firstName: "Ashley" };
+    const customer = { firstName: "Ashley" };
     render(<Appointment customer={customer} />);
-    expect(container.textContent).toMatch("Ashley");
+    expect(document.body.textContent).toContain("Ashley");
   });
 
   it("renders another customer first name", () => {
-    customer = { firstName: "Jordan" };
+    const customer = { firstName: "Jordan" };
+
     render(<Appointment customer={customer} />);
-    expect(container.textContent).toMatch("Jordan");
+
+    expect(document.body.textContent).toContain("Jordan");
   });
 });
 
@@ -47,6 +49,7 @@ describe("AppointmentsDayView", () => {
 
   beforeEach(() => {
     container = document.createElement("div");
+    document.body.replaceChildren(container);
   });
 
   const render = (component) =>
@@ -55,13 +58,13 @@ describe("AppointmentsDayView", () => {
   it("renders a div with the right id", () => {
     render(<AppointmentsDayView appointments={[]} />);
     expect(
-      container.querySelector("div#appointmentsDayView")
+      document.querySelector("div#appointmentsDayView")
     ).not.toBeNull();
   });
 
   it("renders an ol element to display appointments", () => {
     render(<AppointmentsDayView appointments={[]} />);
-    const listElement = container.querySelector("ol");
+    const listElement = document.querySelector("ol");
     expect(listElement).not.toBeNull();
   });
 
@@ -70,7 +73,7 @@ describe("AppointmentsDayView", () => {
       <AppointmentsDayView appointments={twoAppointments} />
     );
 
-    const listChildren = container.querySelectorAll("ol > li");
+    const listChildren = document.querySelectorAll("ol > li");
     expect(listChildren).toHaveLength(2);
   });
 
@@ -79,14 +82,14 @@ describe("AppointmentsDayView", () => {
       <AppointmentsDayView appointments={twoAppointments} />
     );
 
-    const listChildren = container.querySelectorAll("li");
+    const listChildren = document.querySelectorAll("li");
     expect(listChildren[0].textContent).toEqual("12:00");
     expect(listChildren[1].textContent).toEqual("13:00");
   });
 
   it("initially shows a message saying there are no appointments today", () => {
     render(<AppointmentsDayView appointments={[]} />);
-    expect(container.textContent).toMatch(
+    expect(document.body.textContent).toContain(
       "There are no appointments scheduled for today."
     );
   });
@@ -95,7 +98,7 @@ describe("AppointmentsDayView", () => {
     render(
       <AppointmentsDayView appointments={twoAppointments} />
     );
-    expect(container.textContent).toMatch("Ashley");
+    expect(document.body.textContent).toContain("Ashley");
   });
 
   it("has a button element in each li", () => {
@@ -103,7 +106,7 @@ describe("AppointmentsDayView", () => {
       <AppointmentsDayView appointments={twoAppointments} />
     );
 
-    const buttons = container.querySelectorAll("li > button");
+    const buttons = document.querySelectorAll("li > button");
 
     expect(buttons).toHaveLength(2);
     expect(buttons[0].type).toEqual("button");
@@ -113,8 +116,8 @@ describe("AppointmentsDayView", () => {
     render(
       <AppointmentsDayView appointments={twoAppointments} />
     );
-    const button = container.querySelectorAll("button")[1];
-    act(() => ReactTestUtils.Simulate.click(button));
-    expect(container.textContent).toMatch("Jordan");
+    const button = document.querySelectorAll("button")[1];
+    act(() => button.click());
+    expect(document.body.textContent).toContain("Jordan");
   });
 });

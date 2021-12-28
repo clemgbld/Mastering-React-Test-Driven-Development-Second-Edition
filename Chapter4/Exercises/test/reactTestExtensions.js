@@ -1,28 +1,37 @@
 import ReactDOM from "react-dom";
-import { act, Simulate } from "react-dom/test-utils";
+import { act } from "react-dom/test-utils";
 
 export let container;
 
-export const initializeReactContainer = () =>
-  (container = document.createElement("div"));
+export const initializeReactContainer = () => {
+  container = document.createElement("div");
+  document.body.replaceChildren(container);
+};
 
 export const render = (component) =>
   act(() => ReactDOM.createRoot(container).render(component));
 
-export const click = (element) =>
-  act(() => Simulate.click(element));
+export const click = (element) => act(() => element.click());
 
-export const submit = (element) =>
-  act(() => Simulate.submit(element));
+const originalValueProperty = (reactElement) => {
+  const prototype = Object.getPrototypeOf(reactElement);
+  return Object.getOwnPropertyDescriptor(prototype, "value");
+};
 
-export const change = (element, event) =>
-  act(() => Simulate.change(element, event));
+export const change = (target, value) => {
+  originalValueProperty(target).set.call(target, value);
+  const event = new Event("change", {
+    target,
+    bubbles: true,
+  });
+  act(() => target.dispatchEvent(event));
+};
 
 export const element = (selector) =>
-  container.querySelector(selector);
+  document.querySelector(selector);
 
 export const elements = (selector) =>
-  Array.from(container.querySelectorAll(selector));
+  Array.from(document.querySelectorAll(selector));
 
 export const typesOf = (elements) =>
   elements.map((element) => element.type);
@@ -30,7 +39,8 @@ export const typesOf = (elements) =>
 export const textOf = (elements) =>
   elements.map((element) => element.textContent);
 
-export const form = (id) => element(`form[id="${id}"]`);
+export const form = (id) => element("form");
 
-export const labelFor = (formElement) =>
-  element(`label[for="${formElement}"]`);
+export const field = (fieldName) => form().elements[fieldName];
+
+export const submitButton = () => element("input[type=submit]");
