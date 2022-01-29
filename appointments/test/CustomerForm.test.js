@@ -216,27 +216,30 @@ describe("CustomerForm", () => {
     expect(saveSpy).toBeCalledWith(customer);
   });
 
-  it("does not notify onSave if the POST request returns an error", async () => {
-    fetchSpy.stubReturnValue(fetchResponseError());
-    const saveSpy = spy();
+  describe("when POST request returns an error", () => {
+    beforeEach(() => {
+      fetchSpy.stubReturnValue(fetchResponseError());
+    });
 
-    render(
-      <CustomerForm
-        original={blankCustomer}
-        onSave={saveSpy.fn}
-      />
-    );
-    await clickAndWait(submitButton());
+    it("does not notify onSave if the POST request returns an error", async () => {
+      const saveSpy = spy();
 
-    expect(saveSpy).not.toBeCalledWith();
-  });
+      render(
+        <CustomerForm
+          original={blankCustomer}
+          onSave={saveSpy.fn}
+        />
+      );
+      await clickAndWait(submitButton());
 
-  it("renders error message when fetch call fails", async () => {
-    fetchSpy.stubReturnValue(fetchResponseError());
+      expect(saveSpy).not.toBeCalledWith();
+    });
 
-    render(<CustomerForm original={blankCustomer} />);
-    await clickAndWait(submitButton());
+    it("renders error message when fetch call fails", async () => {
+      render(<CustomerForm original={blankCustomer} />);
+      await clickAndWait(submitButton());
 
-    expect(element(".error")).toContainText("error occurred");
+      expect(element(".error")).toContainText("error occurred");
+    });
   });
 });
