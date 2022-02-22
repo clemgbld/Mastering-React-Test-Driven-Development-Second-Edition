@@ -13,6 +13,15 @@ export const render = (component) =>
 
 export const click = (element) => act(() => element.click());
 
+export const submit = (formElement) => {
+  const event = new Event("submit", {
+    bubbles: true,
+    cancelable: true,
+  });
+  act(() => formElement.dispatchEvent(event));
+  return event;
+};
+
 const originalValueProperty = (reactElement) => {
   const prototype = Object.getPrototypeOf(reactElement);
   return Object.getOwnPropertyDescriptor(prototype, "value");

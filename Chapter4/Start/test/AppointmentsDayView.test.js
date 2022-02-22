@@ -16,7 +16,11 @@ import {
 } from "./reactTestExtensions";
 
 describe("Appointment", () => {
-  const blankCustomer = {};
+  const blankCustomer = {
+    firstName: "",
+    lastName: "",
+    phoneNumber: "",
+  };
 
   beforeEach(() => {
     initializeReactContainer();

@@ -12,35 +12,34 @@ import {
   change,
 } from "./reactTestExtensions";
 import { AppointmentForm } from "../src/AppointmentForm";
+import { today, todayAt, tomorrowAt } from "./builders/time";
 
 describe("AppointmentForm", () => {
-  const blankAppointment = {};
-  const services = ["Cut", "Blow-dry"];
+  const blankAppointment = {
+    service: "",
+    stylist: "",
+  };
 
-  const oneDayInMs = 24 * 60 * 60 * 1000;
-  const today = new Date();
-  const tomorrow = new Date(today.getTime() + oneDayInMs);
   const availableTimeSlots = [
     {
-      startsAt: today.setHours(9, 0, 0, 0),
+      startsAt: todayAt(9),
       stylists: ["Ashley", "Jo"],
     },
     {
-      startsAt: today.setHours(9, 30, 0, 0),
+      startsAt: todayAt(9, 30),
       stylists: ["Ashley"],
     },
   ];
 
+  const services = ["Cut", "Blow-dry"];
+  const stylists = ["Asley", "Jo"];
+
   const testProps = {
-    original: blankAppointment,
-    selectableServices: services,
-    selectableStylists: ["Ashley", "Jo"],
-    serviceStylists: {
-      Cut: ["Ashley", "Jo"],
-      "Blow-dry": ["Ashley"],
-    },
     today,
+    selectableServices: services,
+    selectableStylists: stylists,
     availableTimeSlots,
+    original: blankAppointment,
   };
 
   beforeEach(() => {
@@ -73,14 +72,19 @@ describe("AppointmentForm", () => {
   const itRendersAsASelectBox = (fieldName) => {
     it("renders as a select box", () => {
       render(<AppointmentForm {...testProps} />);
-      expect(field("service")).toBeElementWithTag("select");
+      expect(field(fieldName)).toBeElementWithTag("select");
     });
   };
 
   const itInitiallyHasABlankValueChosen = (fieldName) => {
     it("has a blank value as the first value", () => {
-      render(<AppointmentForm {...testProps} />);
-      const firstOption = field("service").childNodes[0];
+      render(
+        <AppointmentForm
+          {...testProps}
+          original={blankAppointment}
+        />
+      );
+      const firstOption = field(fieldName).childNodes[0];
       expect(firstOption.value).toEqual("");
     });
   };
@@ -194,14 +198,13 @@ describe("AppointmentForm", () => {
 
       render(
         <AppointmentForm
+          {...testProps}
           original={appointment}
           selectableServices={selectableServices}
           selectableStylists={selectableStylists}
           serviceStylists={serviceStylists}
         />
       );
-
-      change(field("service"), "1");
 
       expect(labelsOfAllOptions(field("stylist"))).toEqual(
         expect.arrayContaining(["A", "B"])
@@ -236,8 +239,10 @@ describe("AppointmentForm", () => {
     });
 
     it("renders a week of available dates", () => {
-      const today = new Date(2018, 11, 1);
-      render(<AppointmentForm {...testProps} today={today} />);
+      const specificDate = new Date(2018, 11, 1);
+      render(
+        <AppointmentForm {...testProps} today={specificDate} />
+      );
       const dates = elements("thead >* th:not(:first-child)");
       expect(dates).toHaveLength(7);
       expect(dates[0]).toContainText("Sat 01");
@@ -253,15 +258,15 @@ describe("AppointmentForm", () => {
     it("renders radio buttons in the correct table cell positions", () => {
       const availableTimeSlots = [
         {
-          startsAt: today.setHours(9, 0, 0, 0),
+          startsAt: todayAt(9),
           stylists: ["Ashley"],
         },
         {
-          startsAt: today.setHours(9, 30, 0, 0),
+          startsAt: todayAt(9, 30),
           stylists: ["Ashley"],
         },
         {
-          startsAt: tomorrow.setHours(9, 30, 0, 0),
+          startsAt: tomorrowAt(9, 30),
           stylists: ["Ashley"],
         },
       ];
@@ -288,7 +293,7 @@ describe("AppointmentForm", () => {
     it("sets radio button values to the startsAt value of the corresponding appointment", () => {
       render(
         <AppointmentForm
-          original={blankAppointment}
+          {...testProps}
           availableTimeSlots={availableTimeSlots}
         />
       );
@@ -309,6 +314,7 @@ describe("AppointmentForm", () => {
         <AppointmentForm
           {...testProps}
           original={appointment}
+          availableTimeSlots={availableTimeSlots}
         />
       );
       expect(startsAtField(1).checked).toEqual(true);
@@ -356,11 +362,11 @@ describe("AppointmentForm", () => {
     it("filters appointments by selected stylist", () => {
       const availableTimeSlots = [
         {
-          startsAt: today.setHours(9, 0, 0, 0),
+          startsAt: todayAt(9),
           stylists: ["Ashley"],
         },
         {
-          startsAt: today.setHours(9, 30, 0, 0),
+          startsAt: todayAt(9, 30),
           stylists: ["Jo"],
         },
       ];

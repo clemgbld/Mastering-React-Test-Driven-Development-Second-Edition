@@ -15,7 +15,7 @@ const dailyTimeSlots = (salonOpensAt, salonClosesAt) => {
 };
 
 const weeklyDateValues = (startDate) => {
-  const midnight = new Date(startDate).setHours(0, 0, 0, 0);
+  const midnight = startDate.setHours(0, 0, 0, 0);
   const increment = 24 * 60 * 60 * 1000;
   return timeIncrements(7, midnight, increment);
 };
@@ -191,7 +191,6 @@ export const AppointmentForm = ({
 };
 
 AppointmentForm.defaultProps = {
-  availableTimeSlots: [],
   today: new Date(),
   salonOpensAt: 9,
   salonClosesAt: 19,

@@ -10,9 +10,26 @@ import {
   click,
 } from "./reactTestExtensions";
 import { AppointmentForm } from "../src/AppointmentForm";
+import { today, todayAt, tomorrowAt } from "./builders/time";
 
 describe("AppointmentForm", () => {
-  const blankAppointment = {};
+  const blankAppointment = {
+    service: "",
+  };
+
+  const availableTimeSlots = [
+    { startsAt: todayAt(9) },
+    { startsAt: todayAt(9, 30) },
+  ];
+
+  const services = ["Cut", "Blow-dry"];
+
+  const testProps = {
+    today,
+    selectableServices: services,
+    availableTimeSlots,
+    original: blankAppointment,
+  };
 
   beforeEach(() => {
     initializeReactContainer();
@@ -32,34 +49,37 @@ describe("AppointmentForm", () => {
   };
 
   it("renders a form", () => {
-    render(<AppointmentForm original={blankAppointment} />);
+    render(<AppointmentForm {...testProps} />);
     expect(form()).not.toBeNull();
   });
 
   it("renders a submit button", () => {
-    render(<AppointmentForm original={blankAppointment} />);
+    render(<AppointmentForm {...testProps} />);
     expect(submitButton()).not.toBeNull();
   });
 
   describe("service field", () => {
     it("renders as a select box", () => {
-      render(<AppointmentForm original={blankAppointment} />);
+      render(<AppointmentForm {...testProps} />);
       expect(field("service")).not.toBeNull();
       expect(field("service").tagName).toEqual("SELECT");
     });
 
     it("has a blank value as the first value", () => {
-      render(<AppointmentForm original={blankAppointment} />);
+      render(
+        <AppointmentForm
+          {...testProps}
+          original={blankAppointment}
+        />
+      );
       const firstOption = field("service").childNodes[0];
       expect(firstOption.value).toEqual("");
     });
 
     it("lists all salon services", () => {
-      const services = ["Cut", "Blow-dry"];
-
       render(
         <AppointmentForm
-          original={blankAppointment}
+          {...testProps}
           selectableServices={services}
         />
       );
@@ -70,10 +90,10 @@ describe("AppointmentForm", () => {
     });
 
     it("pre-selects the existing value", () => {
-      const services = ["Cut", "Blow-dry"];
       const appointment = { service: "Blow-dry" };
       render(
         <AppointmentForm
+          {...testProps}
           original={appointment}
           selectableServices={services}
         />
@@ -84,16 +104,13 @@ describe("AppointmentForm", () => {
   });
 
   describe("time slot table", () => {
-    const oneDayInMs = 24 * 60 * 60 * 1000;
-    const today = new Date();
-    const tomorrow = new Date(today.getTime() + oneDayInMs);
-    const availableTimeSlots = [
-      { startsAt: today.setHours(9, 0, 0, 0) },
-      { startsAt: today.setHours(9, 30, 0, 0) },
-    ];
-
     it("renders a table for time slots with an id", () => {
-      render(<AppointmentForm original={blankAppointment} />);
+      render(
+        <AppointmentForm
+          original={blankAppointment}
+          availableTimeSlots={availableTimeSlots}
+        />
+      );
       expect(element("table#time-slots")).not.toBeNull();
     });
 
@@ -103,6 +120,7 @@ describe("AppointmentForm", () => {
           original={blankAppointment}
           salonOpensAt={9}
           salonClosesAt={11}
+          availableTimeSlots={availableTimeSlots}
         />
       );
       const timesOfDayHeadings = elements("tbody >* th");
@@ -112,17 +130,23 @@ describe("AppointmentForm", () => {
     });
 
     it("renders an empty cell at the start of the header row", () => {
-      render(<AppointmentForm original={blankAppointment} />);
+      render(
+        <AppointmentForm
+          original={blankAppointment}
+          availableTimeSlots={availableTimeSlots}
+        />
+      );
       const headerRow = element("thead > tr");
       expect(headerRow.firstChild).toContainText("");
     });
 
     it("renders a week of available dates", () => {
-      const today = new Date(2018, 11, 1);
+      const specificDate = new Date(2018, 11, 1);
       render(
         <AppointmentForm
           original={blankAppointment}
-          today={today}
+          today={specificDate}
+          availableTimeSlots={availableTimeSlots}
         />
       );
       const dates = elements("thead >* th:not(:first-child)");
@@ -139,9 +163,9 @@ describe("AppointmentForm", () => {
 
     it("renders radio buttons in the correct table cell positions", () => {
       const availableTimeSlots = [
-        { startsAt: today.setHours(9, 0, 0, 0) },
-        { startsAt: today.setHours(9, 30, 0, 0) },
-        { startsAt: tomorrow.setHours(9, 30, 0, 0) },
+        { startsAt: todayAt(9, 0) },
+        { startsAt: todayAt(9, 30) },
+        { startsAt: tomorrowAt(9, 30) },
       ];
 
       render(

@@ -7,13 +7,18 @@ import {
   field,
   click,
   change,
+  submit,
   submitButton,
   labelFor,
 } from "./reactTestExtensions";
 import { CustomerForm } from "../src/CustomerForm";
 
 describe("CustomerForm", () => {
-  const blankCustomer = {};
+  const blankCustomer = {
+    firstName: "",
+    lastName: "",
+    phoneNumber: "",
+  };
 
   beforeEach(() => {
     initializeReactContainer();
@@ -78,10 +83,9 @@ describe("CustomerForm", () => {
   const itSubmitsNewValue = (fieldName, value) =>
     it("saves new value when submitted", () => {
       expect.hasAssertions();
-      const customer = { [fieldName]: "" };
       render(
         <CustomerForm
-          original={customer}
+          original={blankCustomer}
           onSubmit={(props) =>
             expect(props[fieldName]).toEqual(value)
           }
@@ -126,11 +130,7 @@ describe("CustomerForm", () => {
       />
     );
 
-    const event = new Event("submit", {
-      bubbles: true,
-      cancelable: true,
-    });
-    form().dispatchEvent(event);
+    const event = submit(form());
 
     expect(event.defaultPrevented).toBe(true);
   });

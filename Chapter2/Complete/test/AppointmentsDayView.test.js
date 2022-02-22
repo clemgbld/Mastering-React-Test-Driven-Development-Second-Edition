@@ -7,7 +7,12 @@ import {
 } from "../src/AppointmentsDayView";
 
 describe("Appointment", () => {
-  const blankCustomer = {};
+  const blankCustomer = {
+    firstName: "",
+    lastName: "",
+    phoneNumber: "",
+  };
+
   let container;
 
   beforeEach(() => {
