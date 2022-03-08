@@ -1,5 +1,12 @@
 import express from 'express';
-import expressGraphql from 'express-graphql';
+import {
+  getGraphQLParameters,
+  processRequest,
+  renderGraphiQL,
+  shouldRenderGraphiQL,
+  sendResult
+} from "graphql-helix";
+
 import { buildSchema } from 'graphql';
 import { GraphQLError } from 'graphql';
 import { Appointments } from './appointments';
@@ -86,33 +93,49 @@ export function buildApp(customerData, appointmentData, timeSlots) {
     }
   });
 
-  app.use('/graphql', expressGraphql({
-    schema,
-    rootValue: {
-      customer: ({ id }) => {
-        const customer = customers.all()[id];
-        return { ...customer, appointments: appointments.forCustomer(customer.id) };
-      },
-      customers: query =>
-        customers.search(buildSearchParams(query)).map(customer => ({...customer,
-          appointments: () => appointments.forCustomer(customer.id)
-        })),
-      availableTimeSlots: () => appointments.getTimeSlots(),
-      appointments: ({ from, to }) => {
-        return appointments.getAppointments(
-          parseInt(from),
-          parseInt(to),
-          customers.all());
-      },
-      addAppointment: ({ appointment }) => {
-        appointment = Object.assign(appointment, { startsAt: parseInt(appointment.startsAt) });
-        return appointments.add(appointment);
-      },
-      addCustomer: ({ customer }) => customers.add(customer),
-    },
-    validationRules: [customerValidation, appointmentValidation],
-    graphiql: true
-  }));
+  app.use('/graphql', async (request, res) => {
+    // Determine whether we should render GraphiQL instead of returning an API response
+    if (shouldRenderGraphiQL(request)) {
+      res.send(renderGraphiQL());
+    } else {
+      // Extract the Graphql parameters from the request
+      const { operationName, query, variables } = getGraphQLParameters(request);
+
+      // Validate and execute the query
+      const result = await processRequest({
+        operationName,
+        query,
+        variables,
+        request,
+        schema,
+        rootValueFactory: executionContext => ({
+          customer: ({ id }) => {
+            const customer = customers.all()[id];
+            return { ...customer, appointments: appointments.forCustomer(customer.id) };
+          },
+          customers: query =>
+          customers.search(buildSearchParams(query)).map(customer => ({...customer,
+            appointments: () => appointments.forCustomer(customer.id)
+          })),
+          availableTimeSlots: () => appointments.getTimeSlots(),
+          appointments: ({ from, to }) => {
+            return appointments.getAppointments(
+              parseInt(from),
+              parseInt(to),
+              customers.all());
+          },
+          addAppointment: ({ appointment }) => {
+            appointment = Object.assign(appointment, { startsAt: parseInt(appointment.startsAt) });
+            return appointments.add(appointment);
+          },
+          addCustomer: ({ customer }) => customers.add(customer),
+        }),
+        validationRules: [customerValidation, appointmentValidation],
+      });
+
+      sendResult(result, res);
+    }
+  });
 
   app.get('*', function (req, res) {
     res.sendFile('dist/index.html', { root: process.cwd() });

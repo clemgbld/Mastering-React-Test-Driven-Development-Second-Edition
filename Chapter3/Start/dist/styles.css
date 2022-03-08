@@ -12,10 +12,13 @@ div#appointmentsDayView {
   justify-content: center;
 }
 
-ol {
-  width: 99px;
+menu, ol {
   list-style-type: none;
   padding: 0;
+}
+
+ol {
+  width: 99px;
   border-right: 1px solid black;
 }
 
@@ -47,7 +50,7 @@ li:first-child {
   margin: 20px 0 0 0;
 }
 
-li > button {
+ol > li > button {
   width: 80px;
 }
 

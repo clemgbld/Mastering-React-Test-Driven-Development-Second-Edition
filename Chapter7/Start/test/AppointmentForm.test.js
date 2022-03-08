@@ -95,13 +95,7 @@ describe("AppointmentForm", () => {
     global.fetch.mockResolvedValue(fetchResponseOk({}));
     const saveSpy = jest.fn();
 
-    render(
-      <AppointmentForm
-        {...testProps}
-        original={blankAppointment}
-        onSave={saveSpy}
-      />
-    );
+    render(<AppointmentForm {...testProps} onSave={saveSpy} />);
     await clickAndWait(submitButton());
 
     expect(saveSpy).toBeCalled();
@@ -111,13 +105,7 @@ describe("AppointmentForm", () => {
     global.fetch.mockResolvedValue(fetchResponseError());
     const saveSpy = jest.fn();
 
-    render(
-      <AppointmentForm
-        {...testProps}
-        original={blankAppointment}
-        onSave={saveSpy}
-      />
-    );
+    render(<AppointmentForm {...testProps} onSave={saveSpy} />);
     await clickAndWait(submitButton());
 
     expect(saveSpy).not.toBeCalled();

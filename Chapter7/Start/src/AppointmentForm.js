@@ -118,7 +118,6 @@ export const AppointmentForm = ({
   salonClosesAt,
   today,
   availableTimeSlots,
-  onSubmit,
   onSave,
 }) => {
   const [appointment, setAppointment] = useState(original);

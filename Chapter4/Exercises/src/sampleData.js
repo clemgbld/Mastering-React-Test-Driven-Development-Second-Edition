@@ -1,4 +1,4 @@
-import { name, phone, lorem } from "faker";
+import { faker } from "@faker-js/faker";
 
 Array.prototype.unique = function () {
   return this.filter(function (value, index, self) {
@@ -14,7 +14,7 @@ const today = new Date();
 const at = (hours) => today.setHours(hours, 0);
 
 const stylists = [0, 1, 2, 3, 4, 5, 6]
-  .map(() => name.firstName())
+  .map(() => faker.name.firstName())
   .unique();
 
 const services = [
@@ -27,16 +27,16 @@ const services = [
 ];
 
 const generateFakeCustomer = () => ({
-  firstName: name.firstName(),
-  lastName: name.lastName(),
-  phoneNumber: phone.phoneNumberFormat(1),
+  firstName: faker.name.firstName(),
+  lastName: faker.name.lastName(),
+  phoneNumber: faker.phone.phoneNumberFormat(1),
 });
 
 const generateFakeAppointment = () => ({
   customer: generateFakeCustomer(),
   stylist: stylists.pickRandom(),
   service: services.pickRandom(),
-  notes: lorem.paragraph(),
+  notes: faker.lorem.paragraph(),
 });
 
 export const sampleAppointments = [

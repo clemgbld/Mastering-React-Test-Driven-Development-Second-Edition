@@ -1,4 +1,4 @@
-import { name, phone, lorem } from "faker";
+import { faker } from "@faker-js/faker";
 
 const randomInt = (range) => Math.floor(Math.random() * range);
 
@@ -27,16 +27,16 @@ const services = [
 ];
 
 const generateFakeCustomer = () => ({
-  firstName: name.firstName(),
-  lastName: name.lastName(),
-  phoneNumber: phone.phoneNumberFormat(1),
+  firstName: faker.name.firstName(),
+  lastName: faker.name.lastName(),
+  phoneNumber: faker.phone.phoneNumberFormat(1),
 });
 
 const generateFakeAppointment = () => ({
   customer: generateFakeCustomer(),
   stylist: stylists.pickRandom(),
   service: services.pickRandom(),
-  notes: lorem.paragraph(),
+  notes: faker.lorem.paragraph(),
 });
 
 export const sampleAppointments = [
